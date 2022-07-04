@@ -14,7 +14,7 @@ function checksExistsUserAccount(request, response, next) {
 
   const user = users.find((user) => user.username === username); //compara e retorna se encontrar
 
-  if(!user) return response.status(400).json({error: "Not found!"}); //erro se não encontrou
+  if(!user) return response.status(404).json({error: "Not found!"}); //erro se não encontrou
 
   request.user = user; //incorpora ao requerst se encontrar
 
@@ -24,7 +24,7 @@ function checksExistsUserAccount(request, response, next) {
 function checksCreateTodosUserAvailability(request, response, next) {
   const { user } = request; //pega do middleware
 
-  if(!user.pro && user.todos.length >= 10) return response.status(400).json({error: "limite de todos atingido"})
+  if(!user.pro && user.todos.length >= 10) return response.status(403).json({error: "limite de todos atingido"})
   //se superar 10 todos criados da erro
 
   next();//avança
@@ -34,14 +34,18 @@ function checksTodoExists(request, response, next) {
   //valida user
   const { username } = request.headers; //pega do request no header
   const user = users.find((user) => user.username === username); //compara e retorna se encontrar
-  if(!user) return response.status(400).json({error: "Not found!"}); //erro se não encontrou
+  if(!user) return response.status(404).json({error: "Not found!"}); //erro se não encontrou
 
   //valida todo
   const { id } = request.params; //pega id de route params
+  const todoIsUuid = validate(id);
+  if(!todoIsUuid) return response.status(400).json({error: "Not valid id!"}); //erro se nao encontrou
   const todo = user.todos.find((todo) => todo.id === id); //compara e retorna se encontrar
-  if(!todo) return response.status(400).json({error: "Not found!"}); //erro se nao encontrou
+  if(!todo) return response.status(404).json({error: "Not found!"}); //erro se nao encontrou
 
-  request.todo = todo; //incrementa
+  //incrementa
+  request.todo = todo; 
+  request.user = user;
 
   next();
 }
@@ -51,7 +55,7 @@ function findUserById(request, response, next) {
 
   const user = users.find((user) => user.id === id); //procura o user
 
-  if(!user) return response.status(400).json({error: "Not found"}); //erro se não encontrar
+  if(!user) return response.status(404).json({error: "Not found"}); //erro se não encontrar
 
   request.user = user; //incorpora ao request
 
