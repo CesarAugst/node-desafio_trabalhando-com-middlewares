@@ -10,19 +10,52 @@ app.use(cors());
 const users = [];
 
 function checksExistsUserAccount(request, response, next) {
-  // Complete aqui
+  const { username } = request.headers; //pega do request no header
+
+  const user = users.find((user) => user.username === username); //compara e retorna se encontrar
+
+  if(!user) return response.status(400).json({error: "Not found!"}); //erro se não encontrou
+
+  request.user = user; //incorpora ao requerst se encontrar
+
+  next(); //avança se tudo ok
 }
 
 function checksCreateTodosUserAvailability(request, response, next) {
-  // Complete aqui
+  const { user } = request; //pega do middleware
+
+  if(!user.pro && user.todos.length >= 10) return response.status(400).json({error: "limite de todos atingido"})
+  //se superar 10 todos criados da erro
+
+  next();//avança
 }
 
 function checksTodoExists(request, response, next) {
-  // Complete aqui
+  //valida user
+  const { username } = request.headers; //pega do request no header
+  const user = users.find((user) => user.username === username); //compara e retorna se encontrar
+  if(!user) return response.status(400).json({error: "Not found!"}); //erro se não encontrou
+
+  //valida todo
+  const { id } = request.params; //pega id de route params
+  const todo = user.todos.find((todo) => todo.id === id); //compara e retorna se encontrar
+  if(!todo) return response.status(400).json({error: "Not found!"}); //erro se nao encontrou
+
+  request.todo = todo; //incrementa
+
+  next();
 }
 
 function findUserById(request, response, next) {
-  // Complete aqui
+  const { id } = request.params; //pega dos route params
+
+  const user = users.find((user) => user.id === id); //procura o user
+
+  if(!user) return response.status(400).json({error: "Not found"}); //erro se não encontrar
+
+  request.user = user; //incorpora ao request
+
+  next(); //avança para o próximo
 }
 
 app.post('/users', (request, response) => {
